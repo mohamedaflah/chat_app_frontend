@@ -1,4 +1,4 @@
-import { IoFilterSharp, IoSearch } from "react-icons/io5";
+import { /*IoFilterSharp,*/ IoSearch } from "react-icons/io5";
 import { Input } from "../ui/input";
 import { CiMenuKebab } from "react-icons/ci";
 import { IoLogOutOutline } from "react-icons/io5";
@@ -29,6 +29,7 @@ function SidebarSearchFilter() {
   const dispatch=useDispatch()
   const navigate=useNavigate()
   const handleLogout = () => {
+     // eslint-disable-next-line @typescript-eslint/no-explicit-any
      dispatch(logoutUser()).then((res:any) => {
        console.log("🚀 ~ dispatch ~ res:", res)
      })

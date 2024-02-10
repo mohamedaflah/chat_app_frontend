@@ -32,14 +32,14 @@ function Chat() {
   const [, setSocketconnection] = useState<any>(null);
   const [onlineusers, setOnlineUsers] = useState([]);
   const dispatch = useDispatch();
-  const chats = useSelector((state) => state?.chat?.chat?.messages);
-  const users = useSelector((state) => state?.allUsers?.users?.users);
-  const myDetails = useSelector((state) => state?.user?.user?.user);
-  const chat = useSelector((state) => state.chat.chat);
+  const chats:any = useSelector((state) => state?.chat?.chat?.messages);
+  const users:any = useSelector((state) => state?.allUsers?.users?.users);
+  const myDetails:any = useSelector((state) => state?.user?.user?.user);
+  const chat:any = useSelector((state) => state.chat.chat);
   const { loading } = useSelector((state) => state.chat);
-  const scrollArea = useRef();
+  const scrollArea:any = useRef();
   const chatId: string = useSelector((state) => state?.chat?.chat?.chatId);
-  const selectedUser = useSelector((state) => state.chat.selectedUser);
+  const selectedUser:any = useSelector((state) => state.chat.selectedUser);
   async function showChatWithUser(id: string) {
     const data = {
       currentId: myDetails._id,

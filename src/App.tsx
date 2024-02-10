@@ -10,7 +10,8 @@ import { checkAuthentication } from "./redux/actions/User/authAction";
 const Chat = lazy(() => import("./pages/user/Chat"));
 function App() {
   const [loading, setLoading] = useState(true);
-  const user = useSelector((state) => state?.user?.user);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const user:any = useSelector((state) => state?.user?.user);
   const dispatch = useDispatch();
 
   useEffect(() => {
