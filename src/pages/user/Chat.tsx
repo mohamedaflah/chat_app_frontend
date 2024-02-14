@@ -6,16 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { baseURL } from "@/constant/constant";
 import { getAllUsers } from "@/redux/actions/User/allUserAction";
-import {
-  JSXElementConstructor,
-  Key,
-  ReactElement,
-  ReactNode,
-  ReactPortal,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { FaPaperclip } from "react-icons/fa";
 import { IoSend } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
@@ -26,22 +17,33 @@ import { messagesType, sendChatBody } from "@/types/chatType";
 import ButtonLoader from "@/components/custom/ButtonLoader";
 import toast from "react-hot-toast";
 import { getMessage } from "@/redux/slices/chatSlice";
+import { AppDispatch, RootState } from "@/redux/store";
+import { oneUserType } from "@/types/Alluser";
+import { Socket } from "socket.io-client";
 function Chat() {
-  const [message, setMessage] = useState("");
-  const buttonRef = useRef();
+  const [message, setMessage] = useState<string>("");
+  const buttonRef = useRef<HTMLInputElement>();
   const [, setSocketconnection] = useState<any>(null);
-  const [onlineusers, setOnlineUsers] = useState([]);
-  const [typings,setTypings]=useState<{id:string,status:boolean}[]>([])
-  
-  const dispatch = useDispatch();
-  const chats = useSelector((state) => state?.chat?.chat?.messages);
-  const users = useSelector((state) => state?.allUsers?.users?.users);
-  const myDetails = useSelector((state) => state?.user?.user?.user);
-  const chat = useSelector((state) => state.chat.chat);
-  const { loading } = useSelector((state) => state.chat);
-  const scrollArea = useRef();
-  const chatId: string = useSelector((state) => state?.chat?.chat?.chatId);
-  const selectedUser = useSelector((state) => state.chat.selectedUser);
+  const [onlineusers, setOnlineUsers] = useState<
+    { userId: string; socketId: string }[]
+  >([]);
+  const [typings, setTypings] = useState<{ id: string; status: boolean }[]>([]);
+
+  const dispatch: AppDispatch = useDispatch();
+  const chats = useSelector((state: RootState) => state?.chat?.chat?.messages);
+  const users = useSelector(
+    (state: RootState) => state?.allUsers?.users?.users
+  );
+  const myDetails = useSelector((state: RootState) => state?.user?.user?.user);
+  const chat = useSelector((state: RootState) => state.chat.chat);
+  const { loading } = useSelector((state: RootState) => state.chat);
+  const scrollArea = useRef<HTMLDivElement>();
+  const chatId: string = useSelector(
+    (state: RootState) => state?.chat?.chat?.chatId
+  );
+  const selectedUser = useSelector(
+    (state: RootState) => state.chat.selectedUser
+  );
   async function showChatWithUser(id: string) {
     const data = {
       currentId: myDetails._id,
@@ -50,18 +52,16 @@ function Chat() {
     sessionStorage.setItem("selecteUser", JSON.stringify(data));
     await dispatch(getSpecifChat(data));
   }
-  function messageBoxForm(event) {
+  function messageBoxForm(event: FormEvent) {
     event.preventDefault();
-    buttonRef?.current.click();
+    buttonRef?.current?.click();
   }
   async function handleSendMessage() {
     if (message) {
       if (scrollArea.current) {
-        const { scrollHeight, clientHeight } = scrollArea.current;
-        scrollArea.current.scrollTop = scrollHeight - clientHeight;
+        scrollArea.current.scrollTop = scrollArea.current.scrollHeight;
       }
-      const socket: any = io(baseURL);
-
+      const socket: Socket = io(baseURL);
       const body: sendChatBody = {
         chatId: chatId,
         content: message,
@@ -75,64 +75,58 @@ function Chat() {
         senderId: myDetails._id,
       });
 
-      await dispatch(sendChat(body)).then((res) => {
-        console.log("🚀 ~ awaitdispatch ~ res:", res);
-
+      await dispatch(sendChat(body)).then(() => {
         setMessage("");
       });
     }
   }
-  useEffect(()=>{
-    console.log('Helow',typings);
-    
-  },[typings])
   useEffect(() => {
-    const socket: any = io(baseURL);
+    const socket: Socket = io(baseURL);
     setSocketconnection(socket);
     async function selectChat() {
-      let uesrData = sessionStorage.getItem("selecteUser");
-      if (uesrData) {
-        await dispatch(getSpecifChat(JSON.parse(uesrData)));
+      const uesrDetails: string = sessionStorage.getItem("selecteUser");
+      if (uesrDetails) {
+        await dispatch(getSpecifChat(JSON.parse(uesrDetails)));
       }
     }
     selectChat();
     socket.on("connect", () => {
       console.log("Connected to server");
     });
-    socket.on("getOnlineUsers", (data: any) => {
-      setOnlineUsers(data);
-    });
-    console.log(onlineusers,'online');
+    socket.on(
+      "getOnlineUsers",
+      (data: { userId: string; socketId: string }[]) => {
+        console.log("🚀 ~ socket.on ~ data:", data);
+        setOnlineUsers(data);
+      }
+    );
     socket?.emit("add-user", myDetails._id);
     socket.on("getMessage", async (res: messagesType) => {
-      // alert(JSON.stringify(res.content))
-      console.log(res, " Res");
-
+      console.log("🚀 ~ socket.on ~ res:", res);
       // alert(`${JSON.stringify(selectedUser)}`)
       // if(selectedUser?._id===res.senderId){
-
       dispatch(getMessage(res));
       // }
 
       toast.success(res.content);
     });
+    
     socket.on("typing", (res) => {
-      const typeSet=new Set(...typings.map(type=>type.id))
-      if(!typeSet.has(res.Id)){
+      const typeSet = new Set(...typings.map((type) => type.id));
+      if (!typeSet.has(res.Id)) {
         // alert("reach")
         console.log(res.Id);
-        
-        setTypings([...typings,{id:res.Id,status:true}])
+
+        setTypings([...typings, { id: res.Id, status: true }]);
       }
-      
     });
-    socket.on("stoppedTyping",(res)=>{
+    socket.on("stoppedTyping", (res) => {
       setTypings((prevData) => {
         return prevData.map((typings) =>
           typings.id === res.Id ? { ...typings, status: false } : typings
         );
-      })
-    })
+      });
+    });
     socket.on("disconnect", () => {
       console.log("Disconnected from server");
     });
@@ -140,8 +134,8 @@ function Chat() {
       socket.off("getMessage");
       socket.disconnect();
       socket.off("typing");
-      sessionStorage.removeItem("selecteUser")
-      setTypings([])
+      sessionStorage.removeItem("selecteUser");
+      setTypings([]);
     };
   }, []);
 
@@ -163,8 +157,8 @@ function Chat() {
       name: myDetails.username,
       Id: myDetails._id,
     });
-     setTimeout(() => {
-      socket.emit('stoppedTyping', {
+    setTimeout(() => {
+      socket.emit("stoppedTyping", {
         msg: "typing",
         recipienId: selectedUser._id,
         name: myDetails.username,
@@ -173,28 +167,12 @@ function Chat() {
     }, 1000);
   };
 
-  
   return (
     <section className="w-full mx-auto h-screen  flex justify-between">
       <aside className="w-full  h-full sm:w-[630px] md:w-[495px] lg:w-[590px]  flex flex-col p-3 border-r ">
         <SidebarSearchFilter />
         <div className={"w-full   h-[100vh] overflow-y-auto gap-y-1"}>
-          {/* <div className="w-full h-16 border-b  flex items-center justify-between px-2 hover:bg-userHover cursor-pointer">
-            <div className="relative">
-              <span className="w-[10px] h-[10px] rounded-full bg-slate-200  absolute top-0 left-0 z-10 flex items-center justify-center">
-                <span className="w-[6px] h-[6px] rounded-full bg-green-500"></span>
-              </span>
-              <Avatar>
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback>CN</AvatarFallback>
-              </Avatar>
-            </div>
-            <div className="w-full  flex flex-col px-2">
-              <span className="font-semibold text-1xl ">demo</span>
-              <span className="font-thin text-sm">Hi how are you </span>
-            </div>
-          </div> */}
-          {users?.map((userdata: any, Idx: number) => (
+          {users?.map((userdata: oneUserType, Idx: number) => (
             <div
               key={userdata._id}
               className={`w-full h-16  ${
@@ -222,7 +200,14 @@ function Chat() {
                 <span className="font-semibold text-1xl ">
                   {userdata.username}
                 </span>
-                <span className="font-thin text-sm">{typings.find((typings)=>typings.id===userdata._id)?.status?<span className="text-green-700 font-bold">typing...</span>:"Hi how are you "}</span>
+                <span className="font-thin text-sm">
+                  {typings.find((typings) => typings.id === userdata._id)
+                    ?.status ? (
+                    <span className="text-green-700 font-bold">typing...</span>
+                  ) : (
+                    "Hi how are you "
+                  )}
+                </span>
               </div>
             </div>
           ))}
@@ -248,7 +233,14 @@ function Chat() {
                 </span>
                 <span className="text-sm flex items-center gap-1">
                   <span className="w-[8px] h-[8px] rounded-full bg-green-500 block"></span>
-                  {typings.find((typings)=>typings.id===selectedUser._id)?.status?"typing...":onlineusers.find((data)=>data?.userId===selectedUser._id)?"Online":"Offline"}                  
+                  {typings.find((typings) => typings.id === selectedUser._id)
+                    ?.status
+                    ? "typing..."
+                    : onlineusers.find(
+                        (data) => data?.userId === selectedUser._id
+                      )
+                    ? "Online"
+                    : "Offline"}
                 </span>
               </div>
             </div>
@@ -267,17 +259,9 @@ function Chat() {
               )}
               {chats?.map(
                 (content: {
-                  _id: Key | null | undefined;
-                  senderId: any;
-                  content:
-                    | string
-                    | number
-                    | boolean
-                    | ReactElement<any, string | JSXElementConstructor<any>>
-                    | Iterable<ReactNode>
-                    | ReactPortal
-                    | null
-                    | undefined;
+                  _id: null | undefined | string;
+                  senderId: string;
+                  content: string | number | null | undefined;
                   createdAt: string | number | Date;
                 }) => (
                   <div

@@ -21,3 +21,4 @@ export type messagesType = {
   updatedAt: Date;
   date: Date;
 };
+

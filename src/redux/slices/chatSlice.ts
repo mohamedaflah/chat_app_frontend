@@ -1,6 +1,6 @@
 /* eslint-disable no-self-assign */
-import { chatType } from "@/types/chatType";
-import { createSlice } from "@reduxjs/toolkit";
+import { chatType, messagesType } from "@/types/chatType";
+import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { getSpecifChat, sendChat } from "../actions/Chat/getSpcificChat";
 import toast from "react-hot-toast";
 

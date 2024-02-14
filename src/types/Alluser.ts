@@ -3,12 +3,13 @@ export interface allUser {
   err: boolean;
   users: null | [];
 }
-export interface oneUserType{
-  _id:string,
-  username:string,
-  email:string,
-  profile:string,
-  joinedDate:Date,
-  createdAt:Date,
-  updatedAt:Date
+export interface oneUserType {
+  _id: string;
+  username: string;
+  email: string;
+  profile: string;
+  joinedDate: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  lastSeen?: Date;
 }
