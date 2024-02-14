@@ -1,8 +1,3 @@
-export interface allUser {
-  loading: boolean;
-  err: boolean;
-  users: null | [];
-}
 export interface oneUserType {
   _id: string;
   username: string;
@@ -12,4 +7,9 @@ export interface oneUserType {
   createdAt: Date;
   updatedAt: Date;
   lastSeen?: Date;
+}
+export interface allUser {
+  loading: boolean;
+  err: boolean;
+  users: null | oneUserType[];
 }

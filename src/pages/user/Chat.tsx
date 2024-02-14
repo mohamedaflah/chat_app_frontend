@@ -31,9 +31,8 @@ function Chat() {
 
   const dispatch: AppDispatch = useDispatch();
   const chats = useSelector((state: RootState) => state?.chat?.chat?.messages);
-  const users = useSelector(
-    (state: RootState) => state?.allUsers?.users?.users
-  );
+  const users = useSelector((state: RootState) => state.allUsers.users);
+
   const myDetails = useSelector((state: RootState) => state?.user?.user?.user);
   const chat = useSelector((state: RootState) => state.chat.chat);
   const { loading } = useSelector((state: RootState) => state.chat);
@@ -110,7 +109,7 @@ function Chat() {
 
       toast.success(res.content);
     });
-    
+
     socket.on("typing", (res) => {
       const typeSet = new Set(...typings.map((type) => type.id));
       if (!typeSet.has(res.Id)) {

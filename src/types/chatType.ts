@@ -1,10 +1,3 @@
-export interface chatType {
-  loading: boolean;
-  chat: null | [];
-  err: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  selectedUser: null | any;
-}
 
 export interface sendChatBody {
   chatId: string;
@@ -21,4 +14,11 @@ export type messagesType = {
   updatedAt: Date;
   date: Date;
 };
+export interface chatType {
+  loading: boolean;
+  chat: null | messagesType[];
+  err: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  selectedUser: null | any;
+}
 
