@@ -1,19 +1,17 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// import SideBarUser from "@/components/custom/SideBarUser";
 import SidebarSearchFilter from "@/components/custom/SidebarSearchFilter";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { baseURL } from "@/constant/constant";
 import { getAllUsers } from "@/redux/actions/User/allUserAction";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import { FaPaperclip } from "react-icons/fa";
 import { IoSend } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import io from "socket.io-client";
 import WelcomeSection from "./Welcom";
 import { getSpecifChat, sendChat } from "@/redux/actions/Chat/getSpcificChat";
-import { messagesType, sendChatBody } from "@/types/chatType";
+import { OnlineUsers, messagesType, sendChatBody } from "@/types/chatType";
 import ButtonLoader from "@/components/custom/ButtonLoader";
 import toast from "react-hot-toast";
 import { getMessage } from "@/redux/slices/chatSlice";
@@ -23,9 +21,8 @@ import { Socket } from "socket.io-client";
 function Chat() {
   const [message, setMessage] = useState<string>("");
   const buttonRef = useRef<HTMLInputElement>();
-  const [, setSocketconnection] = useState<any>(null);
   const [onlineusers, setOnlineUsers] = useState<
-    { userId: string; socketId: string }[]
+  OnlineUsers[]
   >([]);
   const [typings, setTypings] = useState<{ id: string; status: boolean }[]>([]);
 
@@ -81,7 +78,6 @@ function Chat() {
   }
   useEffect(() => {
     const socket: Socket = io(baseURL);
-    setSocketconnection(socket);
     async function selectChat() {
       const uesrDetails: string = sessionStorage.getItem("selecteUser");
       if (uesrDetails) {
@@ -94,7 +90,7 @@ function Chat() {
     });
     socket.on(
       "getOnlineUsers",
-      (data: { userId: string; socketId: string }[]) => {
+      (data: OnlineUsers[]) => {
         console.log("🚀 ~ socket.on ~ data:", data);
         setOnlineUsers(data);
       }
@@ -144,11 +140,9 @@ function Chat() {
     }
     fetAllUsers();
   }, [dispatch, myDetails._id]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleMessageInputChange = (e: Event | any) => {
-    // setTyping(true);
-    // socket.emit('typing', { userId: 'aflu' });
-    const socket: any = io(baseURL);
+
+  const handleMessageInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const socket: Socket = io(baseURL);
     setMessage(e?.target?.value);
     socket.emit("typing", {
       msg: "typing",
@@ -181,7 +175,7 @@ function Chat() {
             >
               <div className="relative">
                 {onlineusers?.some(
-                  (user: any) => user?.userId == userdata._id
+                  (user: OnlineUsers) => user?.userId == userdata._id
                 ) && (
                   <span className="w-[10px] h-[10px] rounded-full bg-slate-200  absolute top-0 left-0 z-10 flex items-center justify-center">
                     <span
@@ -236,7 +230,7 @@ function Chat() {
                     ?.status
                     ? "typing..."
                     : onlineusers.find(
-                        (data) => data?.userId === selectedUser._id
+                        (data:OnlineUsers) => data?.userId === selectedUser._id
                       )
                     ? "Online"
                     : "Offline"}
