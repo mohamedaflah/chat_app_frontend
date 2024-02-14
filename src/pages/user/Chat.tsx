@@ -53,7 +53,7 @@ function Chat() {
     buttonRef?.current?.click();
   }
   async function handleSendMessage() {
-    if (message) {
+    if (message.trim()) {
       if (scrollArea.current) {
         scrollArea.current.scrollTop = scrollArea.current.scrollHeight;
       }
