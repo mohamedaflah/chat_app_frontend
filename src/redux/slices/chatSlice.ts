@@ -1,3 +1,4 @@
+/* eslint-disable no-self-assign */
 import { chatType } from "@/types/chatType";
 import { createSlice } from "@reduxjs/toolkit";
 import { getSpecifChat, sendChat } from "../actions/Chat/getSpcificChat";
@@ -15,8 +16,18 @@ const chatReducer = createSlice({
   initialState,
   reducers: {
     getMessage: (state, action: PayloadAction<messagesType>) => {
+      
+      // if (state.chat) {
+      //   state.chat = {
+      //     ...state.chat,
+      //     messages: [...state.chat.messages, action.payload],
+      //   };
+      // }
+      state.loading=false;
+      state.err=false
       const messages=state.chat?.messages
       state.chat.messages=[...messages,action.payload]
+      state.selectedUser=state.selectedUser
     },
   },
   extraReducers: (builder) => {

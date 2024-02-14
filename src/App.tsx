@@ -6,12 +6,14 @@ import { Login } from "./pages/user/Login";
 import { Toaster } from "react-hot-toast";
 import { Suspense, lazy, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { store } from "./redux/store"; // Assuming you have a RootState type defined
 import { checkAuthentication } from "./redux/actions/User/authAction";
+
 const Chat = lazy(() => import("./pages/user/Chat"));
+
 function App() {
   const [loading, setLoading] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const user:any = useSelector((state) => state?.user?.user);
+  const user = useSelector((state: store) => state?.user?.user); // Adjust RootState based on your actual state structure
   const dispatch = useDispatch();
 
   useEffect(() => {

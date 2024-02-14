@@ -22,30 +22,37 @@ import { useDispatch, useSelector } from "react-redux";
 import io from "socket.io-client";
 import WelcomeSection from "./Welcom";
 import { getSpecifChat, sendChat } from "@/redux/actions/Chat/getSpcificChat";
-import { sendChatBody } from "@/types/chatType";
+import { messagesType, sendChatBody } from "@/types/chatType";
 import ButtonLoader from "@/components/custom/ButtonLoader";
 import toast from "react-hot-toast";
 import { getMessage } from "@/redux/slices/chatSlice";
 function Chat() {
   const [message, setMessage] = useState("");
-
+  const buttonRef = useRef();
   const [, setSocketconnection] = useState<any>(null);
   const [onlineusers, setOnlineUsers] = useState([]);
+  const [typings,setTypings]=useState<{id:string,status:boolean}[]>([])
+  
   const dispatch = useDispatch();
-  const chats:any = useSelector((state) => state?.chat?.chat?.messages);
-  const users:any = useSelector((state) => state?.allUsers?.users?.users);
-  const myDetails:any = useSelector((state) => state?.user?.user?.user);
-  const chat:any = useSelector((state) => state.chat.chat);
+  const chats = useSelector((state) => state?.chat?.chat?.messages);
+  const users = useSelector((state) => state?.allUsers?.users?.users);
+  const myDetails = useSelector((state) => state?.user?.user?.user);
+  const chat = useSelector((state) => state.chat.chat);
   const { loading } = useSelector((state) => state.chat);
-  const scrollArea:any = useRef();
+  const scrollArea = useRef();
   const chatId: string = useSelector((state) => state?.chat?.chat?.chatId);
-  const selectedUser:any = useSelector((state) => state.chat.selectedUser);
+  const selectedUser = useSelector((state) => state.chat.selectedUser);
   async function showChatWithUser(id: string) {
     const data = {
       currentId: myDetails._id,
       toId: id,
     };
+    sessionStorage.setItem("selecteUser", JSON.stringify(data));
     await dispatch(getSpecifChat(data));
+  }
+  function messageBoxForm(event) {
+    event.preventDefault();
+    buttonRef?.current.click();
   }
   async function handleSendMessage() {
     if (message) {
@@ -54,7 +61,7 @@ function Chat() {
         scrollArea.current.scrollTop = scrollHeight - clientHeight;
       }
       const socket: any = io(baseURL);
-      
+
       const body: sendChatBody = {
         chatId: chatId,
         content: message,
@@ -69,38 +76,63 @@ function Chat() {
       });
 
       await dispatch(sendChat(body)).then((res) => {
-        console.log("🚀 ~ awaitdispatch ~ res:", res)
-        
-        
+        console.log("🚀 ~ awaitdispatch ~ res:", res);
+
         setMessage("");
       });
     }
   }
-
+  useEffect(()=>{
+    console.log('Helow',typings);
+    
+  },[typings])
   useEffect(() => {
     const socket: any = io(baseURL);
     setSocketconnection(socket);
-
+    async function selectChat() {
+      let uesrData = sessionStorage.getItem("selecteUser");
+      if (uesrData) {
+        await dispatch(getSpecifChat(JSON.parse(uesrData)));
+      }
+    }
+    selectChat();
     socket.on("connect", () => {
       console.log("Connected to server");
     });
     socket.on("getOnlineUsers", (data: any) => {
       setOnlineUsers(data);
     });
-    console.log(onlineusers);
+    console.log(onlineusers,'online');
     socket?.emit("add-user", myDetails._id);
-    socket.on("getMessage", async (res) => {
+    socket.on("getMessage", async (res: messagesType) => {
       // alert(JSON.stringify(res.content))
       console.log(res, " Res");
+
+      // alert(`${JSON.stringify(selectedUser)}`)
+      // if(selectedUser?._id===res.senderId){
+
       dispatch(getMessage(res));
+      // }
 
       toast.success(res.content);
     });
     socket.on("typing", (res) => {
-      console.log("type");
-
-      toast.success(res);
+      const typeSet=new Set(...typings.map(type=>type.id))
+      if(!typeSet.has(res.Id)){
+        // alert("reach")
+        console.log(res.Id);
+        
+        setTypings([...typings,{id:res.Id,status:true}])
+      }
+      
     });
+    socket.on("stoppedTyping",(res)=>{
+      setTypings((prevData) => {
+        return prevData.map((typings) =>
+          typings.id === res.Id ? { ...typings, status: false } : typings
+        );
+      })
+    })
     socket.on("disconnect", () => {
       console.log("Disconnected from server");
     });
@@ -108,6 +140,8 @@ function Chat() {
       socket.off("getMessage");
       socket.disconnect();
       socket.off("typing");
+      sessionStorage.removeItem("selecteUser")
+      setTypings([])
     };
   }, []);
 
@@ -119,6 +153,8 @@ function Chat() {
   }, [dispatch, myDetails._id]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleMessageInputChange = (e: Event | any) => {
+    // setTyping(true);
+    // socket.emit('typing', { userId: 'aflu' });
     const socket: any = io(baseURL);
     setMessage(e?.target?.value);
     socket.emit("typing", {
@@ -127,13 +163,23 @@ function Chat() {
       name: myDetails.username,
       Id: myDetails._id,
     });
+     setTimeout(() => {
+      socket.emit('stoppedTyping', {
+        msg: "typing",
+        recipienId: selectedUser._id,
+        name: myDetails.username,
+        Id: myDetails._id,
+      });
+    }, 1000);
   };
+
+  
   return (
     <section className="w-full mx-auto h-screen  flex justify-between">
       <aside className="w-full  h-full sm:w-[630px] md:w-[495px] lg:w-[590px]  flex flex-col p-3 border-r ">
         <SidebarSearchFilter />
         <div className={"w-full   h-[100vh] overflow-y-auto gap-y-1"}>
-          <div className="w-full h-16 border-b  flex items-center justify-between px-2 hover:bg-userHover cursor-pointer">
+          {/* <div className="w-full h-16 border-b  flex items-center justify-between px-2 hover:bg-userHover cursor-pointer">
             <div className="relative">
               <span className="w-[10px] h-[10px] rounded-full bg-slate-200  absolute top-0 left-0 z-10 flex items-center justify-center">
                 <span className="w-[6px] h-[6px] rounded-full bg-green-500"></span>
@@ -147,7 +193,7 @@ function Chat() {
               <span className="font-semibold text-1xl ">demo</span>
               <span className="font-thin text-sm">Hi how are you </span>
             </div>
-          </div>
+          </div> */}
           {users?.map((userdata: any, Idx: number) => (
             <div
               key={userdata._id}
@@ -176,7 +222,7 @@ function Chat() {
                 <span className="font-semibold text-1xl ">
                   {userdata.username}
                 </span>
-                <span className="font-thin text-sm">Hi how are you </span>
+                <span className="font-thin text-sm">{typings.find((typings)=>typings.id===userdata._id)?.status?<span className="text-green-700 font-bold">typing...</span>:"Hi how are you "}</span>
               </div>
             </div>
           ))}
@@ -202,7 +248,7 @@ function Chat() {
                 </span>
                 <span className="text-sm flex items-center gap-1">
                   <span className="w-[8px] h-[8px] rounded-full bg-green-500 block"></span>
-                  Online
+                  {typings.find((typings)=>typings.id===selectedUser._id)?.status?"typing...":onlineusers.find((data)=>data?.userId===selectedUser._id)?"Online":"Offline"}                  
                 </span>
               </div>
             </div>
@@ -263,7 +309,10 @@ function Chat() {
               )}
             </div>
             <div className="h-[10%]  flex items-start justify-between gap-4">
-              <div className="w-full h-[60%] rounded-md  flex pl-4 pr-1 bg-background border">
+              <form
+                className="w-full h-[60%] rounded-md  flex pl-4 pr-1 bg-background border"
+                onSubmit={messageBoxForm}
+              >
                 <Input
                   type="text"
                   placeholder="Send message.."
@@ -271,12 +320,16 @@ function Chat() {
                   className="h-full border-none outline-0 p-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                   onChange={handleMessageInputChange}
                 />
-                <Button className="text-[18px] p-0 m-0 h-full px-4 bg-transparent text-white hover:bg-transparent">
+                <Button
+                  className="text-[18px] p-0 m-0 h-full px-4 bg-transparent text-white hover:bg-transparent"
+                  type="button"
+                >
                   <FaPaperclip />
                 </Button>
-              </div>
+              </form>
               <div
                 onClick={handleSendMessage}
+                ref={buttonRef}
                 className={`bg-background h-[60%] w-12 flex items-center justify-center rounded-md text-[18px] hover:bg-slate-950 border ${
                   loading || message.length > 0
                     ? "cursor-pointer bg-ternary"

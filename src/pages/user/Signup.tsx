@@ -48,6 +48,7 @@ export const Signup = () => {
         }
       })
       .catch((err: any) => {
+        toast.error(err.message)
         console.log(err, " Err");
       });
   }
@@ -76,7 +77,7 @@ export const Signup = () => {
                   <FormDescription>
                     This is your public display name.
                   </FormDescription>
-                  <FormMessage />
+                  <FormMessage className="text-white font-bold" />
                 </FormItem>
               )}
             />
@@ -92,7 +93,7 @@ export const Signup = () => {
                   <FormDescription>
                     This is your public display email.
                   </FormDescription>
-                  <FormMessage />
+                  <FormMessage className="text-foreground font-bold" />
                 </FormItem>
               )}
             />
@@ -118,19 +119,19 @@ export const Signup = () => {
                       Login
                     </Link>
                   </FormDescription>
-                  <FormMessage />
+                  <FormMessage className="text-foreground font-bold"/>
                 </FormItem>
               )}
             />
             <Button
               type="submit"
-              className={`w-full font-semibold ${
+              className={`w-full font-semibold flex items-center justify-center ${
                 loading ? "cursor-not-allowed" : "cursor-pointer"
               }`}
               disabled={loading ? true : false}
             >
               {loading ? (
-                <span>
+                <span className="flex items-center">
                   Processing
                   <span className="animate-pulse font-semibold text-2xl">
                     ...
