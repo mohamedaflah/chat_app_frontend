@@ -212,7 +212,7 @@ function MobileChatUI() {
           </div>
         </div>
       </header>
-      <main className="w-full h-full  space-y-1 ">
+      <main className="w-full h-full space-y-1 ">
         <div
           className="w-full h-[85%]  overflow-auto py-2 pr-2"
           ref={scrollArea}
@@ -258,9 +258,8 @@ function MobileChatUI() {
           )}
         </div>
         <div className="h-[10%]  flex items-start justify-between gap-4">
-          <form
+          <div
             className="w-full h-[60%] rounded-md  flex pl-4 pr-1 bg-background border"
-            // onSubmit={}
           >
             <Input
               type="text"
@@ -275,7 +274,7 @@ function MobileChatUI() {
             >
               <FaPaperclip />
             </Button>
-          </form>
+          </div>
           <div
             onClick={handleSendMessage}
             className={`bg-background h-[60%] w-12 flex items-center justify-center rounded-md text-[18px] hover:bg-slate-950 border ${
