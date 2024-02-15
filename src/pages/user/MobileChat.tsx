@@ -14,7 +14,7 @@ import { getSpecifChat, sendChat } from "@/redux/actions/Chat/getSpcificChat";
 import { OnlineUsers, messagesType, sendChatBody } from "@/types/chatType";
 
 import toast from "react-hot-toast";
-import {v4 as uuidv4} from 'uuid'
+import { v4 as uuidv4 } from "uuid";
 import { getMessage } from "@/redux/slices/chatSlice";
 import ButtonLoader from "@/components/custom/ButtonLoader";
 import { useNavigate } from "react-router-dom";
@@ -25,10 +25,10 @@ function MobileChatUI() {
   );
   const [message, setMessage] = useState<string>("");
   const { loading } = useSelector((state: RootState) => state.chat);
-  const [allChats,setAllChat]=useState<messagesType[]>([])
+  const [allChats, setAllChat] = useState<messagesType[]>([]);
   const [onlineusers, setOnlineUsers] = useState<OnlineUsers[]>([]);
   const [typings, setTypings] = useState<{ id: string; status: boolean }[]>([]);
-  
+
   const chats = useSelector((state: RootState) => state?.chat?.chat?.messages);
   const scrollArea = useRef<HTMLDivElement>();
   const myDetails = useSelector((state: RootState) => state?.user?.user?.user);
@@ -50,11 +50,11 @@ function MobileChatUI() {
       });
     }, 1200);
   };
-  useEffect(()=>{
+  useEffect(() => {
     if (scrollArea.current) {
-      scrollArea.current.scrollTop=scrollArea.current.scrollHeight
+      scrollArea.current.scrollTop = scrollArea.current.scrollHeight;
     }
-  },[allChats,chats])
+  }, [allChats, chats]);
   async function handleSendMessage() {
     if (message.trim()) {
       if (scrollArea.current) {
@@ -73,23 +73,22 @@ function MobileChatUI() {
         chatId,
         senderId: myDetails._id,
       });
-      const chatBody:messagesType={
-        _id:uuidv4(),
-        content:message,
-        senderId:myDetails._id,
-        chatId:chatId,
-        createdAt:new Date(),
-        date:new Date()
-
-      }
-      setAllChat((preve)=>([...preve,chatBody]))
+      const chatBody: messagesType = {
+        _id: uuidv4(),
+        content: message,
+        senderId: myDetails._id,
+        chatId: chatId,
+        createdAt: new Date(),
+        date: new Date(),
+      };
+      setAllChat((preve) => [...preve, chatBody]);
       await dispatch(sendChat(body));
       setMessage("");
     }
   }
-  useEffect(()=>{
-    setAllChat(chats)
-  },[chats])
+  useEffect(() => {
+    setAllChat(chats);
+  }, [chats]);
   useEffect(() => {
     const socket: Socket = io(baseURL);
     async function selectChat() {
@@ -153,12 +152,15 @@ function MobileChatUI() {
     (state: RootState) => state.chat.selectedUser
   );
 
-  const navigate=useNavigate()
+  const navigate = useNavigate();
   return (
     <main className="sm:block h-screen w-full  p-3">
       <header className="w-full h-16  border-b flex items-center  overflow-hidden">
         <div className="flex gap-3 items-center h-full ">
-          <div className="flex items-center gap-2 rounded-full active:bg-[#f9f0f01c] active:p-1 active:border cursor-pointer" onClick={()=>navigate('/')}>
+          <div
+            className="flex items-center gap-2 rounded-full active:bg-[#f9f0f01c] active:p-1 active:border cursor-pointer"
+            onClick={() => navigate("/")}
+          >
             <div className="text-[20px] h-full">
               <IoMdArrowBack />
             </div>
@@ -181,7 +183,12 @@ function MobileChatUI() {
             <span className="text-sm flex items-center gap-1">
               {typings.find((typings) => typings.id === selectedUser._id)
                 ?.status ? (
-                "typing..."
+                <>
+                  <span className="w-[8px] h-[8px] rounded-full bg-blue-500 block"></span>
+                  <p>
+                    typing<span className="animate-pulse">...</span>{" "}
+                  </p>
+                </>
               ) : onlineusers.find(
                   (data: OnlineUsers) => data?.userId === selectedUser._id
                 ) ? (

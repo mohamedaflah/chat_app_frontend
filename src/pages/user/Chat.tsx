@@ -19,7 +19,7 @@ import { AppDispatch, RootState } from "@/redux/store";
 import { oneUserType } from "@/types/Alluser";
 import { Socket } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
-import {v4 as uuidv4} from 'uuid'
+import { v4 as uuidv4 } from "uuid";
 function Chat() {
   const [message, setMessage] = useState<string>("");
   const buttonRef = useRef<HTMLInputElement>();
@@ -27,16 +27,18 @@ function Chat() {
   const [typings, setTypings] = useState<{ id: string; status: boolean }[]>([]);
   const dispatch: AppDispatch = useDispatch();
   const chats = useSelector((state: RootState) => state?.chat?.chat?.messages);
-  const [allChats,setAllChat]=useState<messagesType[]>([])
+  const [allChats, setAllChat] = useState<messagesType[]>([]);
   const users = useSelector((state: RootState) => state.allUsers.users);
-  const myDetails:oneUserType = useSelector((state: RootState) => state?.user?.user?.user);
+  const myDetails: oneUserType = useSelector(
+    (state: RootState) => state?.user?.user?.user
+  );
   const chat = useSelector((state: RootState) => state.chat.chat);
   const { loading } = useSelector((state: RootState) => state.chat);
   const scrollArea = useRef<HTMLDivElement>();
   const chatId: string = useSelector(
     (state: RootState) => state?.chat?.chat?.chatId
   );
-  const navigate=useNavigate()
+  const navigate = useNavigate();
   const selectedUser = useSelector(
     (state: RootState) => state.chat.selectedUser
   );
@@ -47,22 +49,21 @@ function Chat() {
     };
     sessionStorage.setItem("selecteUser", JSON.stringify(data));
     await dispatch(getSpecifChat(data));
-    if(window.innerWidth < 640){
-      navigate("/mobile")
+    if (window.innerWidth < 640) {
+      navigate("/mobile");
     }
   }
-  useEffect(()=>{
+  useEffect(() => {
     if (scrollArea.current) {
-      scrollArea.current.scrollTop=scrollArea.current.scrollHeight
+      scrollArea.current.scrollTop = scrollArea.current.scrollHeight;
     }
-  },[allChats])
+  }, [allChats]);
   function messageBoxForm(event: FormEvent) {
     event.preventDefault();
     buttonRef?.current?.click();
   }
   async function handleSendMessage() {
     if (message.trim()) {
-     
       const socket: Socket = io(baseURL);
       const body: sendChatBody = {
         chatId: chatId,
@@ -76,23 +77,22 @@ function Chat() {
         chatId,
         senderId: myDetails._id,
       });
-      const chatBody:messagesType={
-        _id:uuidv4(),
-        content:message,
-        senderId:myDetails._id,
-        chatId:chatId,
-        createdAt:new Date(),
-        date:new Date()
-
-      }
-      setAllChat((preve)=>([...preve,chatBody]))
+      const chatBody: messagesType = {
+        _id: uuidv4(),
+        content: message,
+        senderId: myDetails._id,
+        chatId: chatId,
+        createdAt: new Date(),
+        date: new Date(),
+      };
+      setAllChat((preve) => [...preve, chatBody]);
       setMessage("");
       await dispatch(sendChat(body));
     }
   }
-  useEffect(()=>{
-    setAllChat(chats)
-  },[chats])
+  useEffect(() => {
+    setAllChat(chats);
+  }, [chats]);
   useEffect(() => {
     const socket: Socket = io(baseURL);
     async function selectChat() {
@@ -246,7 +246,12 @@ function Chat() {
                 <span className="text-sm flex items-center gap-1">
                   {typings.find((typings) => typings.id === selectedUser._id)
                     ?.status ? (
-                    "typing..."
+                    <>
+                      <span className="w-[8px] h-[8px] rounded-full bg-blue-500 block"></span>
+                      <p>
+                        typing<span className="animate-pulse">...</span>{" "}
+                      </p>
+                    </>
                   ) : onlineusers.find(
                       (data: OnlineUsers) => data?.userId === selectedUser._id
                     ) ? (
