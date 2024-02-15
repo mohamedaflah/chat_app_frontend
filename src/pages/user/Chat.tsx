@@ -22,28 +22,28 @@ import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 function Chat() {
   const [message, setMessage] = useState<string>("");
-  const buttonRef = useRef<HTMLInputElement>();
+  const buttonRef = useRef<HTMLInputElement>(null);
   const [typings, setTypings] = useState<{ id: string; status: boolean }[]>([]);
   const dispatch: AppDispatch = useDispatch();
   const chats = useSelector((state: RootState) => state?.chat?.chat?.messages);
   const [allChats, setAllChat] = useState<messagesType[]>([]);
   const [onlineusers, setOnlineUsers] = useState<OnlineUsers[]>([]);
-  const [allUsers,setAllUsers]=useState<oneUserType[]>([])
-  const users: oneUserType[] = useSelector(
+  const [allUsers, setAllUsers] = useState<oneUserType[]>([]);
+  const users: oneUserType[] | null = useSelector(
     (state: RootState) => state.allUsers.users
   );
-  // const 
+  // const
   useEffect(() => {
     // Separate online users and offline users
-    if(users){
-
+    if (users) {
       const onlineUsers = users.filter((user) =>
         onlineusers.some((onlineUser) => onlineUser.userId === user._id)
       );
       const offlineUsers = users.filter(
-        (user) => !onlineusers.some((onlineUser) => onlineUser.userId === user._id)
+        (user) =>
+          !onlineusers.some((onlineUser) => onlineUser.userId === user._id)
       );
-      setAllUsers([...onlineUsers,...offlineUsers])
+      setAllUsers([...onlineUsers, ...offlineUsers]);
     }
     // Your logic to update the UI based on onlineUsers and offlineUsers
   }, [onlineusers, users]);
@@ -52,7 +52,7 @@ function Chat() {
   );
   const chat = useSelector((state: RootState) => state.chat.chat);
   const { loading } = useSelector((state: RootState) => state.chat);
-  const scrollArea = useRef<HTMLDivElement>();
+  const scrollArea = useRef<HTMLDivElement>(null);
   const chatId: string = useSelector(
     (state: RootState) => state?.chat?.chat?.chatId
   );
@@ -65,7 +65,7 @@ function Chat() {
       currentId: myDetails._id,
       toId: id,
     };
-    sessionStorage.setItem("selecteUser", JSON.stringify(data));
+    localStorage.setItem("selecteUser", JSON.stringify(data));
     await dispatch(getSpecifChat(data));
     if (window.innerWidth < 640) {
       navigate("/mobile");
@@ -114,7 +114,7 @@ function Chat() {
   useEffect(() => {
     const socket: Socket = io(baseURL);
     async function selectChat() {
-      const uesrDetails: string = sessionStorage.getItem("selecteUser");
+      const uesrDetails: string | null = localStorage.getItem("selecteUser");
       if (uesrDetails) {
         await dispatch(getSpecifChat(JSON.parse(uesrDetails)));
       }
@@ -130,14 +130,24 @@ function Chat() {
     socket?.emit("add-user", myDetails._id);
     socket.on("getMessage", async (res: messagesType) => {
       console.log("🚀 ~ socket.on ~ res:", res);
+      const obj: string | null = localStorage.getItem("selecteUser");
+      console.log(obj, " *************");
 
-      const selectedUserData: {
-        currentId: string;
-        toId: string;
-      } = JSON.parse(sessionStorage.getItem("selecteUser"));
+      if (obj) {
+        const selectedUserData: {
+          currentId: string;
+          toId: string;
+        } = JSON.parse(obj);
 
-      if (selectedUserData.toId === res.senderId) {
+        console.log(selectedUserData.toId, "()", res.senderId);
+
+        if (selectedUserData.toId === res.senderId) {
+          dispatch(getMessage(res));
+          setAllChat((prev) => [...prev, res]);
+        }
+      } else {
         dispatch(getMessage(res));
+        setAllChat((prev) => [...prev, res]);
       }
 
       toast.success(res.content);
@@ -166,7 +176,7 @@ function Chat() {
       socket.off("getMessage");
       socket.disconnect();
       socket.off("typing");
-      sessionStorage.removeItem("selecteUser");
+      // localStorage.removeItem("selecteUser");
       setTypings([]);
     };
   }, []);
@@ -194,7 +204,7 @@ function Chat() {
         name: myDetails.username,
         Id: myDetails._id,
       });
-    }, 1200);
+    }, 2000);
   };
 
   return (
@@ -206,7 +216,7 @@ function Chat() {
             <div
               key={userdata._id}
               className={`w-full h-16  ${
-                Idx + 1 !== users.length && "border-b"
+                Idx + 1 !== users?.length && "border-b"
               }  flex items-center justify-between px-2 hover:bg-userHover cursor-pointer`}
               onClick={() => showChatWithUser(userdata._id)}
             >
@@ -317,12 +327,12 @@ function Chat() {
                   >
                     <div
                       key={content._id}
-                      className="px-1  bg-slate-300 rounded-sm text-black flex flex-col  items-center max-w-[200px] sm:max-w-[300px] md:max-w-[400px] lg:max-w-[500px] flex-wrap break-words"
+                      className={`px-1 py-1  rounded-sm text-black flex flex-col  items-center max-w-[200px] sm:max-w-[300px] md:max-w-[400px] lg:max-w-[500px] flex-wrap break-words ${myDetails._id == content.senderId?"bg-ternary text-white rounded-lg rounded-tr-none":"bg-slate-300  text-[black] rounded-lg rounded-tl-none"}`}
                     >
                       <div className="w-full justify-start">
                         {content.content}
                       </div>
-                      <div className="text-sm flex justify-end w-full">
+                      <div className={`text-sm flex  w-full ${myDetails._id == content.senderId?"justify-end":"justify-start"}`}>
                         {/* <span>10:22</span> */}
                         <span>{`${new Date(
                           content.createdAt

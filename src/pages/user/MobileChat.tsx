@@ -30,7 +30,7 @@ function MobileChatUI() {
   const [typings, setTypings] = useState<{ id: string; status: boolean }[]>([]);
 
   const chats = useSelector((state: RootState) => state?.chat?.chat?.messages);
-  const scrollArea = useRef<HTMLDivElement>();
+  const scrollArea = useRef<HTMLDivElement>(null);
   const myDetails = useSelector((state: RootState) => state?.user?.user?.user);
   
   const handleMessageInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -93,7 +93,7 @@ function MobileChatUI() {
   useEffect(() => {
     const socket: Socket = io(baseURL);
     async function selectChat() {
-      const uesrDetails: string = sessionStorage.getItem("selecteUser");
+      const uesrDetails: string|null = localStorage.getItem("selecteUser");
       if (uesrDetails) {
         await dispatch(getSpecifChat(JSON.parse(uesrDetails)));
       }
@@ -109,14 +109,20 @@ function MobileChatUI() {
     socket?.emit("add-user", myDetails._id);
     socket.on("getMessage", async (res: messagesType) => {
       console.log("🚀 ~ socket.on ~ res:", res);
-
-      const selectedUserData: {
-        currentId: string;
-        toId: string;
-      } = JSON.parse(sessionStorage.getItem("selecteUser"));
-
-      if (selectedUserData.toId === res.senderId) {
+      const obj:string|null=localStorage.getItem("selecteUser")
+      if(obj){
+        const selectedUserData: {
+          currentId: string;
+          toId: string;
+        } = JSON.parse(obj);
+  
+        if (selectedUserData.toId === res.senderId) {
+          dispatch(getMessage(res));
+          setAllChat((prev) => [...prev, res]);
+        }
+      }else{
         dispatch(getMessage(res));
+        setAllChat((prev) => [...prev, res]);
       }
 
       toast.success(res.content);
@@ -145,7 +151,6 @@ function MobileChatUI() {
       socket.off("getMessage");
       socket.disconnect();
       socket.off("typing");
-      sessionStorage.removeItem("selecteUser");
       setTypings([]);
     };
   }, []);
