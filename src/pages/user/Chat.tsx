@@ -273,7 +273,7 @@ function Chat() {
                   </div>
                 </div>
               )}
-              {chats?.map(
+              {allChats?.map(
                 (content: {
                   _id: null | undefined | string;
                   senderId: string;
