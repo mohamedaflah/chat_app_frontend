@@ -23,12 +23,30 @@ import { v4 as uuidv4 } from "uuid";
 function Chat() {
   const [message, setMessage] = useState<string>("");
   const buttonRef = useRef<HTMLInputElement>();
-  const [onlineusers, setOnlineUsers] = useState<OnlineUsers[]>([]);
   const [typings, setTypings] = useState<{ id: string; status: boolean }[]>([]);
   const dispatch: AppDispatch = useDispatch();
   const chats = useSelector((state: RootState) => state?.chat?.chat?.messages);
   const [allChats, setAllChat] = useState<messagesType[]>([]);
-  const users = useSelector((state: RootState) => state.allUsers.users);
+  const [onlineusers, setOnlineUsers] = useState<OnlineUsers[]>([]);
+  const [allUsers,setAllUsers]=useState<oneUserType[]>([])
+  const users: oneUserType[] = useSelector(
+    (state: RootState) => state.allUsers.users
+  );
+  // const 
+  useEffect(() => {
+    // Separate online users and offline users
+    if(users){
+
+      const onlineUsers = users.filter((user) =>
+        onlineusers.some((onlineUser) => onlineUser.userId === user._id)
+      );
+      const offlineUsers = users.filter(
+        (user) => !onlineusers.some((onlineUser) => onlineUser.userId === user._id)
+      );
+      setAllUsers([...onlineUsers,...offlineUsers])
+    }
+    // Your logic to update the UI based on onlineUsers and offlineUsers
+  }, [onlineusers, users]);
   const myDetails: oneUserType = useSelector(
     (state: RootState) => state?.user?.user?.user
   );
@@ -184,7 +202,7 @@ function Chat() {
       <aside className="w-full  h-full sm:w-[630px] md:w-[495px] lg:w-[590px]  flex flex-col p-3 border-r ">
         <SidebarSearchFilter />
         <div className={"w-full   h-[100vh] overflow-y-auto gap-y-1"}>
-          {users?.map((userdata: oneUserType, Idx: number) => (
+          {allUsers?.map((userdata: oneUserType, Idx: number) => (
             <div
               key={userdata._id}
               className={`w-full h-16  ${

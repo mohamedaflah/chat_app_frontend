@@ -32,6 +32,7 @@ function MobileChatUI() {
   const chats = useSelector((state: RootState) => state?.chat?.chat?.messages);
   const scrollArea = useRef<HTMLDivElement>();
   const myDetails = useSelector((state: RootState) => state?.user?.user?.user);
+  
   const handleMessageInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const socket: Socket = io(baseURL);
     setMessage(e?.target?.value);
