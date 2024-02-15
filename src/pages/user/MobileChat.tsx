@@ -50,7 +50,11 @@ function MobileChatUI() {
       });
     }, 1200);
   };
-
+  useEffect(()=>{
+    if (scrollArea.current) {
+      scrollArea.current.scrollTop=scrollArea.current.scrollHeight
+    }
+  },[allChats,chats])
   async function handleSendMessage() {
     if (message.trim()) {
       if (scrollArea.current) {

@@ -51,15 +51,18 @@ function Chat() {
       navigate("/mobile")
     }
   }
+  useEffect(()=>{
+    if (scrollArea.current) {
+      scrollArea.current.scrollTop=scrollArea.current.scrollHeight
+    }
+  },[allChats])
   function messageBoxForm(event: FormEvent) {
     event.preventDefault();
     buttonRef?.current?.click();
   }
   async function handleSendMessage() {
     if (message.trim()) {
-      if (scrollArea.current) {
-        scrollArea.current.scrollTop = scrollArea.current.scrollHeight;
-      }
+     
       const socket: Socket = io(baseURL);
       const body: sendChatBody = {
         chatId: chatId,
@@ -265,6 +268,7 @@ function Chat() {
             <div
               className="w-full h-[85%]  overflow-auto py-2 pr-2"
               ref={scrollArea}
+              // onScroll={()=>alert("ehl")}
             >
               {allChats?.length <= 0 && (
                 <div className="px-1  bg-gray-900 rounded-sm text-black flex flex-col  items-center max-w-[200px] flex-wrap break-words mx-auto">
