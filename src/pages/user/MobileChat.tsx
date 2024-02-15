@@ -14,6 +14,7 @@ import { getSpecifChat, sendChat } from "@/redux/actions/Chat/getSpcificChat";
 import { OnlineUsers, messagesType, sendChatBody } from "@/types/chatType";
 
 import toast from "react-hot-toast";
+import {v4 as uuidv4} from 'uuid'
 import { getMessage } from "@/redux/slices/chatSlice";
 import ButtonLoader from "@/components/custom/ButtonLoader";
 import { useNavigate } from "react-router-dom";
@@ -24,8 +25,13 @@ function MobileChatUI() {
   );
   const [message, setMessage] = useState<string>("");
   const { loading } = useSelector((state: RootState) => state.chat);
+  const [allChats,setAllChat]=useState<messagesType[]>([])
   const [onlineusers, setOnlineUsers] = useState<OnlineUsers[]>([]);
   const [typings, setTypings] = useState<{ id: string; status: boolean }[]>([]);
+  
+  const chats = useSelector((state: RootState) => state?.chat?.chat?.messages);
+  const scrollArea = useRef<HTMLDivElement>();
+  const myDetails = useSelector((state: RootState) => state?.user?.user?.user);
   const handleMessageInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const socket: Socket = io(baseURL);
     setMessage(e?.target?.value);
@@ -63,11 +69,23 @@ function MobileChatUI() {
         chatId,
         senderId: myDetails._id,
       });
+      const chatBody:messagesType={
+        _id:uuidv4(),
+        content:message,
+        senderId:myDetails._id,
+        chatId:chatId,
+        createdAt:new Date(),
+        date:new Date()
 
+      }
+      setAllChat((preve)=>([...preve,chatBody]))
       await dispatch(sendChat(body));
       setMessage("");
     }
   }
+  useEffect(()=>{
+    setAllChat(chats)
+  },[chats])
   useEffect(() => {
     const socket: Socket = io(baseURL);
     async function selectChat() {
@@ -131,9 +149,6 @@ function MobileChatUI() {
     (state: RootState) => state.chat.selectedUser
   );
 
-  const chats = useSelector((state: RootState) => state?.chat?.chat?.messages);
-  const scrollArea = useRef<HTMLDivElement>();
-  const myDetails = useSelector((state: RootState) => state?.user?.user?.user);
   const navigate=useNavigate()
   return (
     <main className="sm:block h-screen w-full  p-3">
@@ -185,14 +200,14 @@ function MobileChatUI() {
           className="w-full h-[85%]  overflow-auto py-2 pr-2"
           ref={scrollArea}
         >
-          {chats?.length <= 0 && (
+          {allChats?.length <= 0 && (
             <div className="px-1  bg-gray-900 rounded-sm text-black flex flex-col  items-center max-w-[200px] flex-wrap break-words mx-auto">
               <div className="w-full  flex justify-center  text-white p-1">
                 no message sended🚉
               </div>
             </div>
           )}
-          {chats?.map(
+          {allChats?.map(
             (content: {
               _id: null | undefined | string;
               senderId: string;
