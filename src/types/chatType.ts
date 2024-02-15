@@ -10,7 +10,7 @@ export type messagesType = {
   content: string;
   senderId: string;
   createdAt: Date;
-  updatedAt: Date;
+  updatedAt?: Date;
   date: Date;
 };
 type ChatPayload = {

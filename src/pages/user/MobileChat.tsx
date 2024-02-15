@@ -44,6 +44,7 @@ function MobileChatUI() {
       });
     }, 1200);
   };
+
   async function handleSendMessage() {
     if (message.trim()) {
       if (scrollArea.current) {

@@ -19,6 +19,7 @@ import { AppDispatch, RootState } from "@/redux/store";
 import { oneUserType } from "@/types/Alluser";
 import { Socket } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
+import {v4 as uuidv4} from 'uuid'
 function Chat() {
   const [message, setMessage] = useState<string>("");
   const buttonRef = useRef<HTMLInputElement>();
@@ -26,9 +27,9 @@ function Chat() {
   const [typings, setTypings] = useState<{ id: string; status: boolean }[]>([]);
   const dispatch: AppDispatch = useDispatch();
   const chats = useSelector((state: RootState) => state?.chat?.chat?.messages);
+  const [allChats,setAllChat]=useState<messagesType[]>([])
   const users = useSelector((state: RootState) => state.allUsers.users);
-
-  const myDetails = useSelector((state: RootState) => state?.user?.user?.user);
+  const myDetails:oneUserType = useSelector((state: RootState) => state?.user?.user?.user);
   const chat = useSelector((state: RootState) => state.chat.chat);
   const { loading } = useSelector((state: RootState) => state.chat);
   const scrollArea = useRef<HTMLDivElement>();
@@ -72,11 +73,23 @@ function Chat() {
         chatId,
         senderId: myDetails._id,
       });
+      const chatBody:messagesType={
+        _id:uuidv4(),
+        content:message,
+        senderId:myDetails._id,
+        chatId:chatId,
+        createdAt:new Date(),
+        date:new Date()
 
-      await dispatch(sendChat(body));
+      }
+      setAllChat((preve)=>([...preve,chatBody]))
       setMessage("");
+      await dispatch(sendChat(body));
     }
   }
+  useEffect(()=>{
+    setAllChat(chats)
+  },[chats])
   useEffect(() => {
     const socket: Socket = io(baseURL);
     async function selectChat() {
@@ -253,7 +266,7 @@ function Chat() {
               className="w-full h-[85%]  overflow-auto py-2 pr-2"
               ref={scrollArea}
             >
-              {chats?.length <= 0 && (
+              {allChats?.length <= 0 && (
                 <div className="px-1  bg-gray-900 rounded-sm text-black flex flex-col  items-center max-w-[200px] flex-wrap break-words mx-auto">
                   <div className="w-full  flex justify-center  text-white p-1">
                     no message sended🚉
