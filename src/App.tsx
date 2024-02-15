@@ -6,24 +6,33 @@ import { Login } from "./pages/user/Login";
 import { Toaster } from "react-hot-toast";
 import { Suspense, lazy, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-// import { store } from "./redux/store"; // Assuming you have a RootState type defined
 import { checkAuthentication } from "./redux/actions/User/authAction";
 import { RootState } from "./redux/store";
+import MobileChatUI from "./pages/user/MobileChat";
 
 const Chat = lazy(() => import("./pages/user/Chat"));
 
 function App() {
   const [loading, setLoading] = useState(true);
-  const user = useSelector((state:RootState) => state?.user?.user); // Adjust RootState based on your actual state structure
+  const user = useSelector((state: RootState) => state?.user?.user); // Adjust RootState based on your actual state structure
   const dispatch = useDispatch();
-
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
   useEffect(() => {
     const fetchAuthentication = async () => {
       await dispatch(checkAuthentication());
       setLoading(false);
     };
-
+    console.log(window.innerWidth, " (+)");
     fetchAuthentication();
+
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, [dispatch]);
 
   if (loading) {
@@ -41,7 +50,12 @@ function App() {
             <Route
               path="/"
               element={user?.user ? <Chat /> : <Navigate to="/login" />}
-            />
+            >
+              {/* <Route
+                path="mobile"
+                element={isMobile ?<MobileChatUI />:  <Navigate to="/" />}
+                /> */}
+            </Route>
             <Route
               path="/signup"
               element={user?.user ? <Navigate to={"/"} /> : <Signup />}
@@ -49,6 +63,10 @@ function App() {
             <Route
               path="/login"
               element={user?.user ? <Navigate to={"/"} /> : <Login />}
+            />
+            <Route
+                path="/mobile"
+                element={isMobile ?<MobileChatUI />:  <Navigate to="/" />}
             />
           </Routes>
         </Suspense>

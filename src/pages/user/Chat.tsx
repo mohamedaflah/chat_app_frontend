@@ -18,14 +18,12 @@ import { getMessage } from "@/redux/slices/chatSlice";
 import { AppDispatch, RootState } from "@/redux/store";
 import { oneUserType } from "@/types/Alluser";
 import { Socket } from "socket.io-client";
+import { useNavigate } from "react-router-dom";
 function Chat() {
   const [message, setMessage] = useState<string>("");
   const buttonRef = useRef<HTMLInputElement>();
-  const [onlineusers, setOnlineUsers] = useState<
-  OnlineUsers[]
-  >([]);
+  const [onlineusers, setOnlineUsers] = useState<OnlineUsers[]>([]);
   const [typings, setTypings] = useState<{ id: string; status: boolean }[]>([]);
-
   const dispatch: AppDispatch = useDispatch();
   const chats = useSelector((state: RootState) => state?.chat?.chat?.messages);
   const users = useSelector((state: RootState) => state.allUsers.users);
@@ -37,6 +35,7 @@ function Chat() {
   const chatId: string = useSelector(
     (state: RootState) => state?.chat?.chat?.chatId
   );
+  const navigate=useNavigate()
   const selectedUser = useSelector(
     (state: RootState) => state.chat.selectedUser
   );
@@ -47,6 +46,9 @@ function Chat() {
     };
     sessionStorage.setItem("selecteUser", JSON.stringify(data));
     await dispatch(getSpecifChat(data));
+    if(window.innerWidth < 640){
+      navigate("/mobile")
+    }
   }
   function messageBoxForm(event: FormEvent) {
     event.preventDefault();
@@ -71,9 +73,8 @@ function Chat() {
         senderId: myDetails._id,
       });
 
-      await dispatch(sendChat(body)).then(() => {
-        setMessage("");
-      });
+      await dispatch(sendChat(body));
+      setMessage("");
     }
   }
   useEffect(() => {
@@ -88,20 +89,22 @@ function Chat() {
     socket.on("connect", () => {
       console.log("Connected to server");
     });
-    socket.on(
-      "getOnlineUsers",
-      (data: OnlineUsers[]) => {
-        console.log("🚀 ~ socket.on ~ data:", data);
-        setOnlineUsers(data);
-      }
-    );
+    socket.on("getOnlineUsers", (data: OnlineUsers[]) => {
+      console.log("🚀 ~ socket.on ~ data:", data);
+      setOnlineUsers(data);
+    });
     socket?.emit("add-user", myDetails._id);
     socket.on("getMessage", async (res: messagesType) => {
       console.log("🚀 ~ socket.on ~ res:", res);
-      // alert(`${JSON.stringify(selectedUser)}`)
-      // if(selectedUser?._id===res.senderId){
-      dispatch(getMessage(res));
-      // }
+
+      const selectedUserData: {
+        currentId: string;
+        toId: string;
+      } = JSON.parse(sessionStorage.getItem("selecteUser"));
+
+      if (selectedUserData.toId === res.senderId) {
+        dispatch(getMessage(res));
+      }
 
       toast.success(res.content);
     });
@@ -157,7 +160,7 @@ function Chat() {
         name: myDetails.username,
         Id: myDetails._id,
       });
-    }, 1000);
+    }, 1200);
   };
 
   return (
@@ -225,15 +228,22 @@ function Chat() {
                   {selectedUser.username}
                 </span>
                 <span className="text-sm flex items-center gap-1">
-                  <span className="w-[8px] h-[8px] rounded-full bg-green-500 block"></span>
                   {typings.find((typings) => typings.id === selectedUser._id)
-                    ?.status
-                    ? "typing..."
-                    : onlineusers.find(
-                        (data:OnlineUsers) => data?.userId === selectedUser._id
-                      )
-                    ? "Online"
-                    : "Offline"}
+                    ?.status ? (
+                    "typing..."
+                  ) : onlineusers.find(
+                      (data: OnlineUsers) => data?.userId === selectedUser._id
+                    ) ? (
+                    <>
+                      <span className="w-[8px] h-[8px] rounded-full bg-green-500 block"></span>
+                      Online
+                    </>
+                  ) : (
+                    <>
+                      <span className="w-[8px] h-[8px] rounded-full bg-red-300 block"></span>
+                      Offline
+                    </>
+                  )}
                 </span>
               </div>
             </div>
@@ -308,7 +318,7 @@ function Chat() {
                 onClick={handleSendMessage}
                 ref={buttonRef}
                 className={`bg-background h-[60%] w-12 flex items-center justify-center rounded-md text-[18px] hover:bg-slate-950 border ${
-                  loading || message.length > 0
+                  loading || message.trim().length > 0
                     ? "cursor-pointer bg-ternary"
                     : "cursor-not-allowed pointer-events-none"
                 }`}

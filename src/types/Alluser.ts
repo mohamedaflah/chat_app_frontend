@@ -7,6 +7,7 @@ export interface oneUserType {
   createdAt: Date;
   updatedAt: Date;
   lastSeen?: Date;
+  isFirstTime?: boolean;
 }
 export interface allUser {
   loading: boolean;
