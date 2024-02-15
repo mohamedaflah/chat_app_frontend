@@ -241,10 +241,10 @@ function MobileChatUI() {
               >
                 <div
                   key={content._id}
-                  className="px-1  bg-slate-300 rounded-sm text-black flex flex-col  items-center max-w-[200px] sm:max-w-[300px] md:max-w-[400px] lg:max-w-[500px] flex-wrap break-words"
+                  className={`px-1  rounded-sm text-black flex flex-col  items-center max-w-[200px] sm:max-w-[300px] md:max-w-[400px] lg:max-w-[500px] flex-wrap break-words ${myDetails._id == content.senderId?"bg-ternary text-white rounded-lg rounded-tr-none":"bg-slate-300  text-[black] rounded-lg rounded-tl-none"}`}
                 >
                   <div className="w-full justify-start">{content.content}</div>
-                  <div className="text-sm flex justify-end w-full">
+                  <div className={`text-sm flex  w-full ${myDetails._id == content.senderId?"justify-end":"justify-start"}`}>
                     {/* <span>10:22</span> */}
                     <span>{`${new Date(
                       content.createdAt
