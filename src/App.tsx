@@ -3,16 +3,17 @@ import Navbar from "./components/common/Navbar";
 import { ThemeProvider } from "./components/theme/theme-provider";
 import { Signup } from "./pages/user/Signup";
 import { Login } from "./pages/user/Login";
-import { Toaster } from "react-hot-toast";
+// import { Toaster } from "react-hot-toast";
 import { Suspense, lazy, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { checkAuthentication } from "./redux/actions/User/authAction";
 import { RootState } from "./redux/store";
 import MobileChatUI from "./pages/user/MobileChat";
-
+import { Toaster } from "@/components/ui/toaster"
 const Chat = lazy(() => import("./pages/user/Chat"));
 
 function App() {
+  
   const [loading, setLoading] = useState(true);
   const user = useSelector((state: RootState) => state?.user?.user); // Adjust RootState based on your actual state structure
   const dispatch = useDispatch();
@@ -42,7 +43,8 @@ function App() {
 
   return (
     <main className="overflow-hidden">
-      <Toaster position="top-center" />
+      {/* <Toaster position="top-center" /> */}
+      <Toaster/>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <Navbar />
         <Suspense fallback={<h2>Loading...</h2>}>

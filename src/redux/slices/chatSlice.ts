@@ -7,7 +7,11 @@ import toast from "react-hot-toast";
 const initialState: chatType = {
   loading: false,
   err: false,
-  chat: null,
+  chat: {
+    status:false,
+    chatId:"",
+    messages:[]
+  },
   selectedUser: null,
 };
 
@@ -46,7 +50,11 @@ const chatReducer = createSlice({
         state.loading = false;
         state.err = payload?.response?.data?.err;
         toast.error(payload?.response?.data?.err);
-        state.chat = null;
+        state.chat = {
+          status:false,
+          chatId:"",
+          messages:[]
+        };
       })
       // send chat
       .addCase(sendChat.pending, (state) => {

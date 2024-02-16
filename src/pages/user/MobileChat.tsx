@@ -13,11 +13,14 @@ import { Socket, io } from "socket.io-client";
 import { getSpecifChat, sendChat } from "@/redux/actions/Chat/getSpcificChat";
 import { OnlineUsers, messagesType, sendChatBody } from "@/types/chatType";
 
-import toast from "react-hot-toast";
+
 import { v4 as uuidv4 } from "uuid";
 import { getMessage } from "@/redux/slices/chatSlice";
 import ButtonLoader from "@/components/custom/ButtonLoader";
 import { useNavigate } from "react-router-dom";
+import { toast } from "@/components/ui/use-toast";
+import { oneUserType } from "@/types/Alluser";
+import { cn } from "@/lib/utils";
 function MobileChatUI() {
   const dispatch: AppDispatch = useDispatch();
   const chatId: string = useSelector(
@@ -32,7 +35,7 @@ function MobileChatUI() {
   const chats = useSelector((state: RootState) => state?.chat?.chat?.messages);
   const scrollArea = useRef<HTMLDivElement>(null);
   const myDetails = useSelector((state: RootState) => state?.user?.user?.user);
-  
+  const users:oneUserType[]|null=useSelector((state:RootState)=>state.allUsers.users)
   const handleMessageInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const socket: Socket = io(baseURL);
     setMessage(e?.target?.value);
@@ -125,7 +128,13 @@ function MobileChatUI() {
         setAllChat((prev) => [...prev, res]);
       }
 
-      toast.success(res.content);
+      toast({
+        title:users?.find((user:oneUserType)=>user._id===res.senderId)?.username,
+        description:res.content,        
+        className:cn(
+          'top-0 right-0 flex fixed md:max-w-[420px] md:top-4 md:right-4'
+        )
+      })
     });
 
     socket.on("typing", (res) => {
@@ -260,6 +269,7 @@ function MobileChatUI() {
         <div className="h-[10%]  flex items-start justify-between gap-4">
           <div
             className="w-full h-[60%] rounded-md  flex pl-4 pr-1 bg-background border"
+            // onSubmit={}
           >
             <Input
               type="text"

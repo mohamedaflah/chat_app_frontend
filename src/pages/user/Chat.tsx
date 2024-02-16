@@ -13,14 +13,16 @@ import WelcomeSection from "./Welcom";
 import { getSpecifChat, sendChat } from "@/redux/actions/Chat/getSpcificChat";
 import { OnlineUsers, messagesType, sendChatBody } from "@/types/chatType";
 import ButtonLoader from "@/components/custom/ButtonLoader";
-import toast from "react-hot-toast";
 import { getMessage } from "@/redux/slices/chatSlice";
 import { AppDispatch, RootState } from "@/redux/store";
 import { oneUserType } from "@/types/Alluser";
 import { Socket } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
+import { useToast } from "@/components/ui/use-toast";
+import { cn } from "@/lib/utils";
 function Chat() {
+  const { toast } = useToast();
   const [message, setMessage] = useState<string>("");
   const buttonRef = useRef<HTMLInputElement>(null);
   const [typings, setTypings] = useState<{ id: string; status: boolean }[]>([]);
@@ -50,7 +52,7 @@ function Chat() {
   const myDetails: oneUserType = useSelector(
     (state: RootState) => state?.user?.user?.user
   );
-  const chat = useSelector((state: RootState) => state.chat.chat);
+  const chat = useSelector((state: RootState) => state.chat?.chat);
   const { loading } = useSelector((state: RootState) => state.chat);
   const scrollArea = useRef<HTMLDivElement>(null);
   const chatId: string = useSelector(
@@ -109,7 +111,9 @@ function Chat() {
     }
   }
   useEffect(() => {
+    // if (chats.length > 0) {
     setAllChat(chats);
+    // }
   }, [chats]);
   useEffect(() => {
     const socket: Socket = io(baseURL);
@@ -150,7 +154,15 @@ function Chat() {
         setAllChat((prev) => [...prev, res]);
       }
 
-      toast.success(res.content);
+
+      toast({
+        title: allUsers.find((user: oneUserType) => user._id === res.senderId)
+          ?.username,
+        description: res.content,
+        className: cn(
+          "top-0 right-0 flex fixed md:max-w-[420px] md:top-4 md:right-4"
+        ),
+      });
     });
 
     socket.on("typing", (res) => {
@@ -269,7 +281,7 @@ function Chat() {
               </Avatar>
               <div className="flex flex-col  w-full">
                 <span className="font-semibold text-[18px]">
-                  {selectedUser.username}
+                  {selectedUser?.username}
                 </span>
                 <span className="text-sm flex items-center gap-1">
                   {typings.find((typings) => typings.id === selectedUser._id)
@@ -281,7 +293,7 @@ function Chat() {
                       </p>
                     </>
                   ) : onlineusers.find(
-                      (data: OnlineUsers) => data?.userId === selectedUser._id
+                      (data: OnlineUsers) => data?.userId === selectedUser?._id
                     ) ? (
                     <>
                       <span className="w-[8px] h-[8px] rounded-full bg-green-500 block"></span>
@@ -327,12 +339,22 @@ function Chat() {
                   >
                     <div
                       key={content._id}
-                      className={`px-1 py-1  rounded-sm text-black flex flex-col  items-center max-w-[200px] sm:max-w-[300px] md:max-w-[400px] lg:max-w-[500px] flex-wrap break-words ${myDetails._id == content.senderId?"bg-ternary text-white rounded-lg rounded-tr-none":"bg-slate-300  text-[black] rounded-lg rounded-tl-none"}`}
+                      className={`px-1 py-1  rounded-sm text-black flex flex-col  items-center max-w-[200px] sm:max-w-[300px] md:max-w-[400px] lg:max-w-[500px] flex-wrap break-words ${
+                        myDetails._id == content.senderId
+                          ? "bg-ternary text-white rounded-lg rounded-tr-none"
+                          : "bg-slate-300  text-[black] rounded-lg rounded-tl-none"
+                      }`}
                     >
                       <div className="w-full justify-start">
                         {content.content}
                       </div>
-                      <div className={`text-sm flex  w-full ${myDetails._id == content.senderId?"justify-end":"justify-start"}`}>
+                      <div
+                        className={`text-sm flex  w-full ${
+                          myDetails._id == content.senderId
+                            ? "justify-end"
+                            : "justify-start"
+                        }`}
+                      >
                         {/* <span>10:22</span> */}
                         <span>{`${new Date(
                           content.createdAt
