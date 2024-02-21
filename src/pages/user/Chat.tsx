@@ -216,7 +216,7 @@ function Chat() {
         name: myDetails.username,
         Id: myDetails._id,
       });
-    }, 2000);
+    }, 3000);
   };
 
   return (
@@ -238,7 +238,7 @@ function Chat() {
                 ) && (
                   <span className="w-[10px] h-[10px] rounded-full bg-slate-200  absolute top-0 left-0 z-10 flex items-center justify-center">
                     <span
-                      className={"w-[6px] h-[6px] rounded-full bg-green-500"}
+                      className={"w-[6px] h-[6px] rounded-full bg-green-500 animate-ping"}
                     ></span>
                   </span>
                 )}
@@ -296,7 +296,7 @@ function Chat() {
                       (data: OnlineUsers) => data?.userId === selectedUser?._id
                     ) ? (
                     <>
-                      <span className="w-[8px] h-[8px] rounded-full bg-green-500 block"></span>
+                      <span className="w-[8px] h-[8px] rounded-full bg-green-500 block animate-ping"></span>
                       Online
                     </>
                   ) : (
