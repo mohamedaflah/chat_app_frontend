@@ -3,13 +3,13 @@ import Navbar from "./components/common/Navbar";
 import { ThemeProvider } from "./components/theme/theme-provider";
 import { Signup } from "./pages/user/Signup";
 import { Login } from "./pages/user/Login";
-// import { Toaster } from "react-hot-toast";
 import { Suspense, lazy, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { checkAuthentication } from "./redux/actions/User/authAction";
 import { RootState } from "./redux/store";
 import MobileChatUI from "./pages/user/MobileChat";
 import { Toaster } from "@/components/ui/toaster"
+import ErrorPage from "./pages/Error";
 const Chat = lazy(() => import("./pages/user/Chat"));
 
 function App() {
@@ -43,7 +43,7 @@ function App() {
 
   return (
     <main className="overflow-hidden">
-      {/* <Toaster position="top-center" /> */}
+      
       <Toaster/>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <Navbar />
@@ -70,6 +70,7 @@ function App() {
                 path="/mobile"
                 element={isMobile ?<MobileChatUI />:  <Navigate to="/" />}
             />
+            <Route path="*" element={<ErrorPage/>}/>
           </Routes>
         </Suspense>
       </ThemeProvider>

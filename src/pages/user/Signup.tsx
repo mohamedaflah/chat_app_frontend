@@ -15,13 +15,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
-// import axiosInstance from "@/constant/constant";
-// import toast from "react-hot-toast";
+
 import { userData } from "@/types/userAuth";
 import { useDispatch, useSelector } from "react-redux";
 import { signupUser } from "@/redux/actions/User/authAction";
-import toast from "react-hot-toast";
+import { useToast } from "@/components/ui/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 export const Signup = () => {
+  const {toast}=useToast()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -43,19 +44,22 @@ export const Signup = () => {
       .then((res: any) => {
         console.log("🚀 ~ .then ~ res:", res.payload)
         if (res?.payload?.status) {
-          toast.success(res?.payload?.message);
+          toast({description:"Registration Succesfull"})
           navigate("/");
         }
       })
       .catch((err: any) => {
-        toast.error(err.message)
-        console.log(err, " Err");
+        toast({
+          variant: "destructive",
+          title: "Oops!",
+          description: err.message,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
+        })
       });
   }
   return (
     <div className="darkBg w-full h-screen flex items-center justify-center">
       <div className="form w-[95%] border p-5 rounded-md sm:w-[60%] lg:w-[28%] mx-auto">
-        {/* <h1 className="text-center text-3xl mb-5 font-semibold">Create An Account</h1> */}
         <h1 className="text-center text-3xl mb-5 font-semibold">
           Create An Account
         </h1>
@@ -126,9 +130,9 @@ export const Signup = () => {
             <Button
               type="submit"
               className={`w-full font-semibold flex items-center justify-center ${
-                loading ? "cursor-not-allowed" : "cursor-pointer"
+                loading ? "cursor-not-allowed bg-slate-400 pointer-events-none" : "cursor-pointer"
               }`}
-              disabled={loading ? true : false}
+              // disabled={loading ? true : false}
             >
               {loading ? (
                 <span className="flex items-center">
