@@ -132,7 +132,7 @@ function MobileChatUI() {
         title:users?.find((user:oneUserType)=>user._id===res.senderId)?.username,
         description:res.content,        
         className:cn(
-          'top-2  flex absolute md:max-w-[90%]'
+          'top-2  flex absolute md:max-w-[90%] left-2'
         )
       })
     });
