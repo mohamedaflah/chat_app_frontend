@@ -28,11 +28,9 @@ import { useNavigate } from "react-router-dom";
 function SidebarSearchFilter() {
   const dispatch=useDispatch()
   const navigate=useNavigate()
-  const handleLogout = () => {
+  const handleLogout = async() => {
      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-     dispatch(logoutUser()).then((res:any) => {
-       console.log("🚀 ~ dispatch ~ res:", res)
-     })
+     await dispatch(logoutUser())
      navigate('/login')
 
   };

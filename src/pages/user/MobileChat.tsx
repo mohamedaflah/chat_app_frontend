@@ -34,7 +34,7 @@ function MobileChatUI() {
 
   const chats = useSelector((state: RootState) => state?.chat?.chat?.messages);
   const scrollArea = useRef<HTMLDivElement>(null);
-  const myDetails = useSelector((state: RootState) => state?.user?.user?.user);
+  const myDetails:oneUserType = useSelector((state: RootState) => state?.user?.user?.user);
   const users:oneUserType[]|null=useSelector((state:RootState)=>state.allUsers.users)
   const handleMessageInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const socket: Socket = io(baseURL);
@@ -76,6 +76,7 @@ function MobileChatUI() {
         recipienId: selectedUser._id,
         chatId,
         senderId: myDetails._id,
+        senderName:myDetails.username
       });
       const chatBody: messagesType = {
         _id: uuidv4(),
@@ -84,6 +85,7 @@ function MobileChatUI() {
         chatId: chatId,
         createdAt: new Date(),
         date: new Date(),
+        senderName:myDetails.username
       };
       setAllChat((preve) => [...preve, chatBody]);
       await dispatch(sendChat(body));
@@ -106,12 +108,10 @@ function MobileChatUI() {
       console.log("Connected to server");
     });
     socket.on("getOnlineUsers", (data: OnlineUsers[]) => {
-      console.log("🚀 ~ socket.on ~ data:", data);
       setOnlineUsers(data);
     });
     socket?.emit("add-user", myDetails._id);
     socket.on("getMessage", async (res: messagesType) => {
-      console.log("🚀 ~ socket.on ~ res:", res);
       const obj:string|null=localStorage.getItem("selecteUser")
       if(obj){
         const selectedUserData: {
@@ -132,7 +132,7 @@ function MobileChatUI() {
         title:users?.find((user:oneUserType)=>user._id===res.senderId)?.username,
         description:res.content,        
         className:cn(
-          'top-0 right-0 flex fixed md:max-w-[420px] md:top-4 md:right-4'
+          'top-2  flex absolute md:max-w-[90%]'
         )
       })
     });
@@ -140,9 +140,6 @@ function MobileChatUI() {
     socket.on("typing", (res) => {
       const typeSet = new Set(...typings.map((type) => type.id));
       if (!typeSet.has(res.Id)) {
-        // alert("reach")
-        console.log(res.Id);
-
         setTypings([...typings, { id: res.Id, status: true }]);
       }
     });

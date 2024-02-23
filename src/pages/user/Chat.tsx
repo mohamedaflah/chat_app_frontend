@@ -128,7 +128,7 @@ function Chat() {
       console.log("Connected to server");
     });
     socket.on("getOnlineUsers", (data: OnlineUsers[]) => {
-      console.log("🚀 ~ socket.on ~ data:", data);
+ 
       setOnlineUsers(data);
     });
     socket?.emit("add-user", myDetails._id);
@@ -148,7 +148,7 @@ function Chat() {
           toId: string;
         } = JSON.parse(obj);
 
-        console.log(selectedUserData.toId, "()", res.senderId);
+   
 
         if (selectedUserData.toId === res.senderId) {
           dispatch(getMessage(res));
@@ -163,8 +163,8 @@ function Chat() {
     socket.on("typing", (res) => {
       const typeSet = new Set(...typings.map((type) => type.id));
       if (!typeSet.has(res.Id)) {
-        // alert("reach")
-        console.log(res.Id);
+        
+       
 
         setTypings([...typings, { id: res.Id, status: true }]);
       }

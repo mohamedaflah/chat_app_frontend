@@ -23,7 +23,6 @@ function App() {
       await dispatch(checkAuthentication());
       setLoading(false);
     };
-    console.log(window.innerWidth, " (+)");
     fetchAuthentication();
 
     const handleResize = () => {

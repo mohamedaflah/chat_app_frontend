@@ -38,8 +38,7 @@ export const Login = () => {
       password:values.password
     }
     dispatch(loginUser(userCredentials)).then((res:{payload:{status:boolean}}) => {
-      console.log("🚀 ~ dispatch ~ res:", res)
-      console.log(res?.payload?.status);
+     
       if(res?.payload?.status){
         toast({description:"Login Succesfull"})
         navigate('/')
