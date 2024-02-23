@@ -133,7 +133,13 @@ function Chat() {
     });
     socket?.emit("add-user", myDetails._id);
     socket.on("getMessage", async (res: messagesType) => {
-      console.log("🚀 ~ socket.on ~ res:", res);
+      toast({
+        title: res.senderName,
+        description: res.content,
+        className: cn(
+          "top-2 right-2 w-[90%] flex fixed sm:max-w-[420px] md:top-4 md:right-4"
+        ),
+      });
       const obj: string | null = localStorage.getItem("selecteUser");
 
       if (obj) {
@@ -152,14 +158,6 @@ function Chat() {
         dispatch(getMessage(res));
         setAllChat((prev) => [...prev, res]);
       }
-
-      toast({
-        title: res.senderName,
-        description: res.content,
-        className: cn(
-          "top-0 right-0 flex fixed md:max-w-[420px] md:top-4 md:right-4"
-        ),
-      });
     });
 
     socket.on("typing", (res) => {
