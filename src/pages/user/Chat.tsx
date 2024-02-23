@@ -96,6 +96,7 @@ function Chat() {
         recipienId: selectedUser._id,
         chatId,
         senderId: myDetails._id,
+        senderName: myDetails.username,
       });
       const chatBody: messagesType = {
         _id: uuidv4(),
@@ -104,6 +105,7 @@ function Chat() {
         chatId: chatId,
         createdAt: new Date(),
         date: new Date(),
+        senderName:myDetails.username
       };
       setAllChat((preve) => [...preve, chatBody]);
       setMessage("");
@@ -111,9 +113,7 @@ function Chat() {
     }
   }
   useEffect(() => {
-    // if (chats.length > 0) {
     setAllChat(chats);
-    // }
   }, [chats]);
   useEffect(() => {
     const socket: Socket = io(baseURL);
@@ -135,7 +135,6 @@ function Chat() {
     socket.on("getMessage", async (res: messagesType) => {
       console.log("🚀 ~ socket.on ~ res:", res);
       const obj: string | null = localStorage.getItem("selecteUser");
-      console.log(obj, " *************");
 
       if (obj) {
         const selectedUserData: {
@@ -154,10 +153,8 @@ function Chat() {
         setAllChat((prev) => [...prev, res]);
       }
 
-
       toast({
-        title: allUsers.find((user: oneUserType) => user._id === res.senderId)
-          ?.username,
+        title: res.senderName,
         description: res.content,
         className: cn(
           "top-0 right-0 flex fixed md:max-w-[420px] md:top-4 md:right-4"
@@ -238,7 +235,9 @@ function Chat() {
                 ) && (
                   <span className="w-[10px] h-[10px] rounded-full bg-slate-200  absolute top-0 left-0 z-10 flex items-center justify-center">
                     <span
-                      className={"w-[6px] h-[6px] rounded-full bg-green-500 animate-ping"}
+                      className={
+                        "w-[6px] h-[6px] rounded-full bg-green-500 animate-ping"
+                      }
                     ></span>
                   </span>
                 )}

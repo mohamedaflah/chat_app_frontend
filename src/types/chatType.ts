@@ -12,6 +12,7 @@ export type messagesType = {
   createdAt: Date;
   updatedAt?: Date;
   date: Date;
+  senderName?:string
 };
 type ChatPayload = {
   status: boolean;
